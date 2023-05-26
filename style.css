@@ -1,0 +1,168 @@
+@import url('https://fonts.googleapis.com/css?family=Roboto:700');
+
+/* Variables/colors */
+:root {
+    --apadding: -94px;
+    --color1: #9b2226;
+    --color2: #ae2012;
+    --color3: #bb3e03;
+    --color4: #ca6702;
+    --color5: #ee9b00;
+    --color6: #e9d8a6;
+    --color7: #94d2bd;
+    --color8: #0a9396;
+    --color9: #005f73;
+}
+
+/* Overall settings */
+body {
+  margin:0px;
+  font-family:'Roboto', sans-serif;
+  background-color: #0a0a0a;
+}
+
+/* Class to hide elements */
+.hidden {
+    display: none !important;
+}
+
+/* Container for Home */
+#container {
+  color:white;
+  text-transform: uppercase;
+  font-size:36px;
+  font-weight:bold;
+  padding-top:200px;  
+  position:fixed;
+  width:100%;
+  bottom:45%;
+  display:block;
+  text-align: center;
+}
+
+/* Styling for flipping tags */
+#flip {
+  height:50px;
+  overflow:hidden;
+}
+#flip > div > div {
+  color:#fff;
+  padding:4px 12px;
+  height:45px;
+  margin-bottom:45px;
+  display:inline-block;
+}
+#flip div:first-child {
+  animation: show 12s linear infinite;
+}
+/* Background colors for tag texts */
+#flip div:first-child div {
+  /* background:#298fb4; */
+  background: var(--color9);
+}
+#flip div:nth-child(2) div {
+    /* background:#04384b; */
+    background: var(--color8);
+}
+#flip div:nth-child(3) div {
+    /* background:#04384b; */
+    background: var(--color7);
+}
+#flip div:nth-child(4) div {
+    background: var(--color3);
+}
+#flip div:nth-child(5) div {
+    background: var(--color2);
+}
+/* Last is technically first because of margin-shift direction */
+#flip div:last-child div {
+  /* background:#b91335; */
+  background: var(--color1);
+}
+
+/* Animate tags flipping by adjusting margin-top (opacity for smoothing the wrap-around) */
+/* Let each frame sit for 5%, 94px per slide - set as a variable and then multiplied */
+@keyframes show {
+    0% {margin-top:calc(var(--apadding) * 6);opacity:100;}
+    5% {margin-top:calc(var(--apadding) * 5);}
+    16.67% {margin-top:calc(var(--apadding) * 5);}
+    21.67% {margin-top:calc(var(--apadding) * 4);}
+    33.34% {margin-top:calc(var(--apadding) * 4);}
+    38.34% {margin-top:calc(var(--apadding) * 3);}
+    50% {margin-top:calc(var(--apadding) * 3);}
+    55% {margin-top:calc(var(--apadding) * 2);}
+    66.67% {margin-top:calc(var(--apadding) * 2);}
+    71.67% {margin-top:var(--apadding);}
+    83.34% {margin-top:var(--apadding);}
+    88.34% {margin-top:0px;}
+    97.99% {margin-top:0px; opacity:0;}
+    100% {margin-top:calc(var(--apadding) * 6);opacity:0;}
+}
+
+
+/* Fixed side-bar with contact links + navigation */
+.side {
+    position: fixed;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    z-index: 1000;
+    width: 50px;
+    border-right: 1px dashed rgba(255, 255, 255, 0.3);
+    color: rgba(255, 255, 255, 0.5);
+    font-family: "nimbus-sans", sans-serif;
+    text-transform: uppercase;
+    letter-spacing: 0.0875rem;
+    font-size: 10px;
+    transition: all 0.3s cubic-bezier(0.05, 0.69, 0.14, 1);
+}
+.side:hover {
+    color: rgba(255, 255, 255, 0.5);
+}
+.side .side__inner {
+    position: relative;
+    height: 100%;
+    white-space: nowrap;
+}
+.side a {
+    color: inherit;
+    word-spacing: 0;
+    transition: all 0.3s cubic-bezier(0.05, 0.69, 0.14, 1);
+}
+.side .top,
+.side .bottom,
+.side .center {
+    position: absolute;
+    left: 0;
+    transform: rotate(-90deg) perspective(1px);
+    transform-origin: 50px 50px;
+    height: 50px;
+    line-height: 50px;
+    white-space: nowrap;
+    word-spacing: 0.5rem;
+}
+.side .top {
+    top: 5%;
+    text-align: right;
+    color: rgb(255, 255, 255);
+}
+.side .bottom {
+    top: auto;
+    bottom: 75px;
+}
+.side .center {
+    top:auto;
+    bottom: 50%
+}
+.side .active {
+    color: rgb(255, 255, 255);
+}
+.side .inactive {
+    color: rgb(255, 255, 255, 0.8);
+}
+.side .bottom:hover a {
+    color: rgba(255, 255, 255, 0.2);
+}
+.side .bottom:hover a:hover {
+    color: rgba(255, 255, 255, 0.8);
+}
