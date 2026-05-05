@@ -1,51 +1,1256 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Dominic Strohmeyer</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Mono:wght@300;400;500&display=swap" rel="stylesheet" />
+<style>
+  :root {
+    --bg:          #0e0e10;
+    --bg-surface:  #16161a;
+    --bg-card:     #1c1c22;
+    --border:      rgba(255,255,255,0.08);
+    --border-mid:  rgba(255,255,255,0.14);
+    --accent:      #7f77dd;
+    --accent-dim:  rgba(127,119,221,0.18);
+    --text-1:      #f0efe8;
+    --text-2:      #9996a8;
+    --text-3:      #5c5a6e;
+    --font-display:'DM Serif Display', Georgia, serif;
+    --font-mono:   'DM Mono', 'Courier New', monospace;
+    --radius-sm:   6px;
+    --radius-md:   10px;
+    --ease:        cubic-bezier(0.4,0,0.2,1);
+    --flipper-h:   52px; /* ← skill flipper */
+  }
 
-    <link rel="stylesheet" href="style.css">
-    <style>@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@100;200;500;700&display=swap');</style>
-    <style>@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@100;200;500;700&family=Roboto:wght@100;300;400;700&display=swap');</style>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.1.2/styles/atom-one-dark.min.css">
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
+  html, body {
+    width: 100%; height: 100%;
+    background: var(--bg);
+    color: var(--text-1);
+    font-family: var(--font-mono);
+    overflow: hidden;
+  }
+
+  body::before {
+    content: '';
+    position: fixed; inset: 0;
+    background-image:
+      linear-gradient(rgba(255,255,255,0.015) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(255,255,255,0.015) 1px, transparent 1px);
+    background-size: 48px 48px;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .layer {
+    position: fixed; inset: 0;
+    display: flex; flex-direction: column; align-items: center;
+    opacity: 0; pointer-events: none;
+    transition: opacity 0.7s var(--ease), transform 0.7s var(--ease);
+    z-index: 10;
+  }
+  .layer.visible   { opacity: 1; pointer-events: all; transform: none !important; }
+  .layer.above     { transform: translateY(-24px); }
+  .layer.below     { transform: translateY(24px); }
+
+  /* ── TITLE ── */
+  #title-card {
+    justify-content: center; gap: 1rem;
+    background: var(--bg); z-index: 20;
+  }
+  .logo-name {
+    font-family: var(--font-display);
+    font-size: clamp(36px, 7vw, 72px);
+    letter-spacing: -0.01em; color: var(--text-1); line-height: 1;
+  }
+  .logo-name em { font-style: italic; color: var(--accent); }
+  /* ── SKILL FLIPPER ──────────────────────────────────────
+     To resize: change --flipper-h in :root only.
+  ─────────────────────────────────────────────────────── */
+  .skill-flipper { height: var(--flipper-h); overflow: hidden; }
+  .skill-track {
+    display: flex; flex-direction: column; align-items: center;
+    transition: transform 0.55s var(--ease);
+  }
+  .skill-item {
+    height: var(--flipper-h); display: flex; align-items: center;
+    font-size: calc(var(--flipper-h) * 0.3); font-weight: 500;
+    letter-spacing: 0.08em; text-transform: uppercase;
+    color: var(--accent); white-space: nowrap;
+    padding: 0 calc(var(--flipper-h) * 0.35);
+    border: 1px solid rgba(127,119,221,0.3); border-radius: var(--radius-sm);
+    background: var(--accent-dim);
+  }
+  .title-links-row {
+    display: flex; flex-wrap: wrap; justify-content: center; gap: 6px;
+    margin-bottom: 0.75rem;
+  }
+  .title-links-row a {
+    font-size: 11px; letter-spacing: 0.06em;
+    color: var(--text-2); text-decoration: none;
+    padding: 4px 12px;
+    border: 1px solid var(--border-mid); border-radius: var(--radius-sm);
+    background: var(--bg-surface);
+    transition: color 0.2s, border-color 0.2s;
+  }
+  .title-links-row a:hover { color: var(--accent); border-color: var(--accent); }
+  .scroll-hint {
+    position: absolute; bottom: 2.5rem; left: 50%; transform: translateX(-50%);
+    font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase;
+    color: var(--text-3); display: flex; flex-direction: column; align-items: center; gap: 10px;
+  }
+  .chevron-wrap { display: flex; flex-direction: column; gap: 3px; animation: bob 1.6s ease-in-out infinite; }
+  .chevron {
+    width: 14px; height: 8px;
+    border-right: 1.5px solid var(--text-3); border-bottom: 1.5px solid var(--text-3);
+    transform: rotate(45deg) translateX(-3px); opacity: 0.6;
+  }
+  .chevron:last-child { opacity: 0.3; margin-top: -3px; }
+  @keyframes bob { 0%,100%{transform:translateY(0)} 50%{transform:translateY(5px)} }
+
+  /* ── TIMELINE ── */
+  #timeline-view { background: var(--bg); }
+  #timeline-bar {
+    width: min(1000px, 90vw);
+    margin-top: clamp(1.5rem, 4vh, 3rem); flex-shrink: 0;
+  }
+  .tl-dates-row {
+    display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 10px;
+  }
+  .tl-date-start { font-size: 13px; font-weight: 500; letter-spacing: 0.06em; color: var(--accent); }
+  .tl-job-center {
+    font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase;
+    color: var(--text-2); text-align: center; flex: 1; padding: 0 1rem;
+  }
+  .tl-date-end {
+    font-size: 13px; font-weight: 500; letter-spacing: 0.06em;
+    color: var(--text-2); transition: color 0.35s var(--ease);
+  }
+  .tl-date-end.reached { color: var(--accent); }
+
+  .tl-track-wrap { position: relative; height: 2px; background: var(--border-mid); border-radius: 1px; }
+  .tl-fill {
+    position: absolute; top: 0; left: 0; bottom: 0;
+    background: var(--accent); border-radius: 1px; transition: width 0.12s ease;
+  }
+  .tl-milestones {
+    position: absolute; top: 50%; left: 0; right: 0;
+    transform: translateY(-50%); pointer-events: none;
+  }
+  .tl-milestone {
+    width: 8px; height: 8px; border-radius: 50%;
+    border: 1.5px solid var(--border-mid); background: var(--bg);
+    position: absolute; transform: translate(-50%, -50%) translateY(1px);
+    transition: border-color 0.35s var(--ease), background 0.35s var(--ease);
+  }
+  .tl-milestone.active { border-color: var(--accent); background: var(--accent); }
+  .tl-milestone.passed { border-color: var(--accent); background: var(--bg); }
+
+  /* gap markers on the track */
+  .tl-gap-marker {
+    position: absolute; top: 50%;
+    transform: translate(-50%, -50%);
+    width: 2px; height: 10px;
+    background: var(--text-3);
+    border-radius: 1px;
+    opacity: 0.4;
+  }
+
+  .tl-labels-row { position: relative; margin-top: 8px; height: 28px; } /* tall enough for staggered labels on small screens */
+  .tl-label {
+    font-size: 10px; letter-spacing: 0.06em; color: var(--text-3);
+    transition: color 0.35s var(--ease);
+    position: absolute; top: 0; white-space: nowrap;
+  }
+  .tl-label.active { color: var(--accent); }
+  @media (max-width: 900px) {
+    .tl-label.tl-label-odd { top: 12px; }
+  }
+
+  #content-panel {
+    width: min(820px, 86vw);
+    margin-top: clamp(1.5rem, 3vh, 2.5rem);
+    display: flex; flex-direction: column;
+    max-height: calc(80vh - clamp(1.5rem,4vh,3rem) - 80px - clamp(1.5rem,3vh,2.5rem));
+    overflow: hidden;
+  }
+
+  #past-strip {
+    border-bottom: 1px solid var(--border);
+    padding-bottom: 0; margin-bottom: 0;
+    opacity: 0; max-height: 0; overflow: hidden;
+    transition: opacity 0.4s ease, max-height 0.5s ease, padding-bottom 0.4s ease, margin-bottom 0.4s ease;
+  }
+  #past-strip.visible { opacity: 1; max-height: 200px; padding-bottom: 0.9rem; margin-bottom: 1.25rem; }
+  .past-header { font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--text-3); margin-bottom: 8px; }
+  .past-bullets { display: flex; flex-direction: column; gap: 4px; }
+  .past-bullet { font-size: 11px; color: var(--text-3); line-height: 1.55; padding-left: 12px; position: relative; }
+  .past-bullet::before { content:''; position:absolute; left:0; top:7px; width:4px; height:1px; background:var(--text-3); }
+
+  #job-header {
+    border-left: 2px solid var(--accent); padding-left: 1rem; margin-bottom: 1.25rem;
+    flex-shrink: 0; display: flex; flex-direction: column; gap: 4px;
+  }
+  #job-title-el { font-family: var(--font-display); font-size: clamp(20px,3vw,28px); color: var(--text-1); line-height: 1.15; }
+  #job-company-el { font-size: 13px; color: var(--text-2); letter-spacing: 0.04em; }
+  #job-dates-el   { font-size: 11px; color: var(--accent); letter-spacing: 0.06em; }
+  .job-cert-el { font-size: 11px; letter-spacing: 0.06em; color: var(--text-2); margin-top: 1px; }
+  .job-tags-el { font-size: 11px; letter-spacing: 0.06em; color: var(--text-3); }
+
+  #detail-cards { display: flex; flex-direction: column; gap: 8px; overflow: hidden; }
+  .detail-card {
+    background: var(--bg-card); border: 1px solid var(--border);
+    border-radius: var(--radius-md); padding: 0.75rem 1rem;
+    font-size: 13px; line-height: 1.65; color: var(--text-1);
+    animation: cardIn 0.4s ease forwards;
+  }
+  @keyframes cardIn { from{opacity:0;transform:translateY(8px)} to{opacity:1;transform:translateY(0)} }
+
+  /* ── RESUME ── */
+  #resume-view {
+    background: var(--bg); justify-content: flex-start; align-items: center;
+    padding-bottom: 53px;
+  }
+  #resume-gate-hint {
+    width: min(1000px, 90vw); flex-shrink: 0;
+    font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase;
+    color: var(--text-3); text-align: center;
+    padding: clamp(1.5rem,3vh,2.5rem) 0 clamp(1rem,2vh,1.5rem);
+    border-bottom: 1px solid var(--border);
+  }
+  #resume-scroll {
+    width: min(1000px, 90vw); flex: 1; min-height: 0; overflow-y: auto;
+    padding: clamp(1.5rem,3vh,2rem) 0 clamp(3rem,6vh,5rem) 0;
+    padding-right: 14px;
+    scrollbar-width: thin; scrollbar-color: var(--border-mid) transparent;
+  }
+  #resume-scroll::-webkit-scrollbar { width: 4px; }
+  #resume-scroll::-webkit-scrollbar-thumb { background: var(--border-mid); border-radius: 2px; }
+  #resume-scroll::-webkit-scrollbar-track { background: transparent; margin-bottom: 5px; }
+
+  .resume-name {
+    font-family: var(--font-display); font-size: clamp(32px,6vw,60px);
+    letter-spacing: -0.01em; line-height: 1; margin-bottom: 1rem;
+  }
+  .resume-name em { font-style: italic; color: var(--accent); }
+  .resume-skills-row {
+    display: flex; flex-wrap: wrap; gap: 6px;
+  }
+  .resume-skill-tag {
+    font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase;
+    color: var(--accent); padding: 4px 10px;
+    border: 1px solid rgba(127,119,221,0.3); border-radius: var(--radius-sm);
+    background: var(--accent-dim);
+  }
+  .resume-job {
+    display: grid; grid-template-columns: 120px 1fr; gap: 0 2.5rem;
+    margin-bottom: clamp(2rem,4vh,3rem); padding-bottom: clamp(1.5rem,3vh,2.5rem);
+    border-bottom: 1px solid var(--border);
+    opacity: 0; animation: fadeUp 0.5s ease forwards;
+  }
+  .resume-job:last-child { border-bottom: none; }
+  @keyframes fadeUp { from{opacity:0;transform:translateY(12px)} to{opacity:1;transform:translateY(0)} }
+  .resume-date-col { padding-top: 4px; display: flex; flex-direction: column; align-items: flex-start; }
+  .resume-date-start { font-size: 12px; letter-spacing: 0.06em; color: var(--accent); }
+  .resume-date-sep { width:1px; height:18px; background:linear-gradient(to bottom,var(--accent),var(--text-3)); margin: 5px 0; opacity:0.5; }
+  .resume-date-end   { font-size: 12px; letter-spacing: 0.06em; color: var(--text-3); }
+  .resume-body-col { display: flex; flex-direction: column; gap: 0.35rem; }
+  .resume-job-title { font-family: var(--font-display); font-size: clamp(17px,2.5vw,22px); color: var(--text-1); line-height: 1.2; }
+  .resume-company { font-size: 12px; color: var(--text-2); letter-spacing: 0.05em; }
+  .resume-cert { font-size: 11px; color: var(--text-2); letter-spacing: 0.06em; margin-top: 2px; }
+  .resume-tags { font-size: 11px; color: var(--text-3); letter-spacing: 0.05em; margin-top: 1px; }
+  .resume-bullets { display: flex; flex-direction: column; gap: 5px; margin-top: 0.5rem; }
+  .resume-bullet { font-size: 13px; color: var(--text-2); line-height: 1.6; padding-left: 14px; position: relative; }
+  .resume-bullet::before { content:''; position:absolute; left:0; top:9px; width:5px; height:1px; background:var(--accent); }
+
+  /* ── ABOUT ME ── */
+  #about-view {
+    background: var(--bg);
+    position: fixed; inset: 0;
+    display: flex; flex-direction: column; align-items: center;
+    opacity: 0; pointer-events: none;
+    transform: translateX(100%);
+    transition: opacity 0.55s var(--ease), transform 0.55s var(--ease);
+    z-index: 30; /* above main layers */
+    padding-bottom: 53px;
+    justify-content: flex-start;
+  }
+  #about-view.visible {
+    opacity: 1; pointer-events: all; transform: translateX(0);
+  }
+
+  /* When about view is open, push main content left */
+  .main-wrap {
+    position: fixed; inset: 0;
+    transition: transform 0.55s var(--ease), opacity 0.55s var(--ease);
+  }
+  .main-wrap.shifted {
+    transform: translateX(-60px);
+    opacity: 0.3;
+    pointer-events: none;
+  }
+
+  #about-gate-hint {
+    width: min(1000px, 90vw); flex-shrink: 0;
+    font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase;
+    color: var(--text-3); text-align: center;
+    padding: clamp(1.5rem,3vh,2.5rem) 0 clamp(1rem,2vh,1.5rem);
+    border-bottom: 1px solid var(--border);
+  }
+  #about-scroll {
+    width: min(1000px, 90vw); flex: 1; min-height: 0; overflow-y: auto;
+    padding: clamp(1.5rem,3vh,2rem) 0 clamp(3rem,6vh,5rem) 0;
+    padding-right: 14px;
+    scrollbar-width: thin; scrollbar-color: var(--border-mid) transparent;
+  }
+  #about-scroll::-webkit-scrollbar { width: 4px; }
+  #about-scroll::-webkit-scrollbar-thumb { background: var(--border-mid); border-radius: 2px; }
+  #about-scroll::-webkit-scrollbar-track { background: transparent; }
+
+  .about-name {
+    font-family: var(--font-display); font-size: clamp(32px,6vw,60px);
+    letter-spacing: -0.01em; line-height: 1; margin-bottom: 1rem;
+  }
+  .about-name em { font-style: italic; color: var(--accent); }
+
+  .about-skills-block {
+    margin-bottom: clamp(1.5rem,3vh,2.5rem); padding-bottom: clamp(1.5rem,3vh,2.5rem);
+    border-bottom: 1px solid var(--border);
+    display: flex; flex-direction: column; gap: 10px;
+  }
+  .about-skills-row {
+    display: flex; flex-wrap: wrap; gap: 6px;
+  }
+  .about-skill-tag {
+    font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase;
+    color: var(--accent); padding: 4px 10px;
+    border: 1px solid rgba(127,119,221,0.3); border-radius: var(--radius-sm);
+    background: var(--accent-dim);
+  }
+  .about-links-row {
+    display: flex; flex-wrap: wrap; gap: 6px;
+  }
+  .about-links-row a {
+    font-size: 11px; letter-spacing: 0.06em;
+    color: var(--text-2); text-decoration: none;
+    padding: 4px 12px;
+    border: 1px solid var(--border-mid); border-radius: var(--radius-sm);
+    background: var(--bg-surface);
+    transition: color 0.2s, border-color 0.2s;
+  }
+  .about-links-row a:hover { color: var(--accent); border-color: var(--accent); }
+
+  .resume-skills-block {
+    margin-bottom: clamp(1.5rem,3vh,2.5rem); padding-bottom: clamp(1.5rem,3vh,2.5rem);
+    border-bottom: 1px solid var(--border);
+    display: flex; flex-direction: column; gap: 10px;
+  }
+  .links-row {
+    display: flex; flex-wrap: wrap; gap: 6px;
+  }
+
+  .links-row a {
+    font-size: 12px; letter-spacing: 0.06em;
+    color: var(--text-2); text-decoration: none;
+    padding: 5px 14px;
+    border: 1px solid var(--border-mid); border-radius: var(--radius-sm);
+    background: var(--bg-surface);
+    transition: color 0.2s, border-color 0.2s;
+  }
+  .links-row a:hover { color: var(--accent); border-color: var(--accent); }
+
+  .about-paras { display: flex; flex-direction: column; gap: 1.25rem; }
+  .about-para {
+    font-size: 14px; line-height: 1.75; color: var(--text-2);
+    opacity: 0; animation: fadeUp 0.5s ease forwards;
+  }
+
+  /* hover-bubble text */
+  .about-highlight {
+    color: var(--accent);
+    cursor: default;
+    position: relative;
+    border-bottom: 1px dotted rgba(127,119,221,0.5);
+    transition: color 0.15s;
+  }
+  .about-highlight:hover { color: #a49fee; }
+  .about-highlight .about-tooltip {
+    position: absolute;
+    bottom: calc(100% + 10px);
+    left: 50%; transform: translateX(-50%);
+    background: var(--bg-card);
+    border: 1px solid var(--border-mid);
+    border-radius: var(--radius-md);
+    padding: 10px 14px;
+    font-size: 12px; line-height: 1.6; color: var(--text-1);
+    white-space: normal; width: 240px;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.4);
+    pointer-events: none;
+    opacity: 0; transition: opacity 0.2s var(--ease);
+    z-index: 100; letter-spacing: 0.01em;
+  }
+  .about-highlight .about-tooltip::after {
+    content: ''; position: absolute; top: 100%; left: 50%; transform: translateX(-50%);
+    border: 6px solid transparent; border-top-color: var(--border-mid);
+  }
+  .about-highlight .about-tooltip::before {
+    content: ''; position: absolute; top: 100%; left: 50%; transform: translateX(-50%);
+    border: 5px solid transparent; border-top-color: var(--bg-card); z-index: 1;
+  }
+  .about-highlight:hover .about-tooltip,
+  .about-highlight.tip-open .about-tooltip { opacity: 1; }
+
+  /* ── NAV BAR ── */
+  #scroll-controls {
+    position: fixed; bottom: 0; left: 0; right: 0;
+    display: flex; justify-content: center; align-items: center; gap: 1rem;
+    padding: 0.75rem 1rem;
+    background: rgba(14,14,16,0.88); backdrop-filter: blur(8px);
+    border-top: 1px solid var(--border); z-index: 50;
+  }
+  #scroll-controls button {
+    font-family: var(--font-mono); font-size: 12px; letter-spacing: 0.06em;
+    color: var(--text-2); background: var(--bg-surface);
+    border: 1px solid var(--border-mid); border-radius: var(--radius-sm);
+    padding: 6px 18px; cursor: pointer; transition: color 0.2s, border-color 0.2s;
+  }
+  #scroll-controls button:hover:not(:disabled) { color: var(--text-1); border-color: var(--accent); }
+  #scroll-controls button:disabled { opacity: 0.3; cursor: default; }
+  #btnReverse {
+    border-color: var(--text-3) !important;
+    color: var(--text-3) !important;
+  }
+  #btnReverse:hover { color: var(--text-1) !important; border-color: var(--accent) !important; }
+  #btnReverse.active { color: var(--accent) !important; border-color: var(--accent) !important; }
+  #btnAbout {
+    border-color: rgba(127,119,221,0.4) !important;
+    color: var(--text-2) !important;
+  }
+  #btnAbout:hover { color: var(--accent) !important; border-color: var(--accent) !important; }
+  #progress-label { font-size: 11px; letter-spacing: 0.08em; color: var(--text-3); min-width: 160px; text-align: center; }
+</style>
 </head>
-
 <body>
-    <!-- Static side-bar -->
-    <nav class="side">
-        <div class="side__inner">
-            <div class="top">
-                <a href="portfolio.html">PORTFOLIO</a>
-                <a href="index.html">HOME</a>
-            </div>
-            <div class="bottom">
-                <a href="resume.html">RESUME</a>
-                <a href="email.html">EMAIL</a>
-            </div>
-        </div>
-    </nav>
-
-    <section id="home" class="fade-in">
-        <div id="container">
-            <div>Dominic Strohmeyer</div>
-            <div id=flip>
-                <div><div>Caché</div></div>
-                <div><div>Tableau</div></div>
-                <div><div>Excel(VBA)/Access</div></div>
-                <div><div>HTML/CSS/JS</div></div>
-                <div><div>SQL</div></div>
-                <div><div>Python</div></div>
-            </div>
-        </div>
-    </section>
 
 
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/2.1.3/jquery.min.js"></script>
-    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js"></script>    
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/8.9.1/highlight.min.js"></script>
-    <script src="app.js"></script>
-    <script>hljs.initHighlightingOnLoad();</script>
+
+<script>
+const PORTFOLIO = {
+  name:   ["Dominic", "Strohmeyer"],
+  skills: ["Python", "SQL", "Excel/VBA/Access", "Tableau", "Caché"],
+
+  jobTitles:    ["Financial Operations Analyst", "Environment, Health, and Safety Master Data Analyst","Molecular Biologist", "Biomedical Electronic Technician II","Applications Systems Analyst", "Senior Applications Systems Analyst"],
+  jobCompanies: ["Susquehanna International Group", "Chemtura Corporation", "Fox Chase Cancer Center", "Dartmouth Hitchcock Medical Center","Dartmouth Hitchcock Medical Center", "Dartmouth Hitchcock Medical Center"],
+  jobStarts:    ["Sep 2011", "Sep 2012", "Sep 2013", "Sep 2016","Jul 2020", "Jul 2024"],
+  jobEnds:      ["Apr 2012","Apr 2013","Apr 2014", "Jul 2020","Jul 2024","Present"],
+
+  jobSteps: [20, 16, 16, 16, 16, 16],
+
+  // Extra steps between jobs
+  bufferSteps: 3,
+
+  jobCertifications: ["", "", "", "Natus EEG, NxStage Dialysis", "Epic Ambulatory, Epic Research", "Cosmos Data Science, Cosmos Data Architect"],
+  jobTags:           ["Excel, VBA, Access", "Excel, SAP", "Genome Analysis (IGV), PCR, Cell Culturing, ELISA", "", "Caché", "SQL, Python, Caché, R"],
+
+  jobDetails: [
+    [
+      "Built reports, dashboards, and specialized analytics tools using Excel, VBA, & Access to facilitate daily decisions within Private Placements.",
+      "Designed and implemented a messaging system to automatically categorize and store emails based on ticker symbols.",
+      "Assisted senior traders on model development for valuation of derivatives and other deals involving a variety of asset types.",
+    ],
+    [
+      "Managed the SAP database for all products sold by Chemtura subsidiaries, as well as their constituent components.",
+      "Worked on the transition to GHS safety standards for all products in Chemtura's catalogue to become compliant with new OSHA mandates at the time.",
+      "Performed automatic (web scraping) and manual data collection plus subsequent analysis to properly categorize all products.",
+    ],
+    [
+      "Performed genomic analysis on tissue samples to identify the most statistically likely regions of RNA as candidates for further study.",
+      "Conducted a literature search to hypothesize potential functions for cancer regulation in regions of RNA previously described as 'junk RNA'.",
+      "Wrote initial grant proposals on narrowed scope of long non-coding regions for further research; grants were awarded and research continued after my employment.",
+      "Performed laboratory duties ranging from cell culturing and histology, to animal care and RT-qPCR.",
+    ],
+    [
+      "Repaired medical equipment across 100+ departments within the hospital with a focus on the OR, neurology, dialysis, the labs, and pediatrics, as well as the COVID unit set-up in early 2020.",
+      "Designed and built a tool to monitor equipment availability for inspections, integrating RTLS tracking data with hospital pagers and a VBA front-end.",
+      "Initiated a program to improve medical device cybersecurity, creating a database to track device updates and security notices, while also meeting with vendors and implementing third-party network security solutions.",
+      "Helped select and install major purchases including fleet replacements for infusion pumps and EEG equipment, and a brand new asset management system.",
+      "Implemented an education and tracking program for vital sign monitors, allowing the department to recoup and prevent thousands of dollars per month in replacement components.",
+    ],
+    [
+      "Designed tools for researchers and physicians within the Epic electronic health record system, including a centralized triage and census tracking dashboard utilizing custom metrics and Caché code, which was presented at Epic's annual XGM conference in 2025.",
+      "Worked as part of a six-hospital team building and implementing an electronic symptom reporting system for cancer patients which Epic has adopted and rolled-out as standard build available to all hospitals using their software (>3,700 hospitals).",
+      "Partnered with researchers to translate clinical hypotheses into technical data models, gathering data and ensuring data integrity across high-stakes projects like Dartmouth's Post-Acute COVID Syndrome (PACS/long-COVID) clinic.",
+      "Built a custom tool to detect surgical cases with empty billing information and automatically contact the surgical team for correction, directly improving revenue cycle accuracy and reducing administrative overhead.",
+    ],
+    [
+      "Managed the institutional integration of Epic Cosmos, a 300M+ record clinical database, growing the Dartmouth Health research community from a dozen users to nearly 100 within my first year by providing access governance, technical mentorship, complex query support, and presenting research capabilities at departmental meetings.",
+      "Worked as the data scientist/architect on multiple funded research projects, including the first NIH R03 grant awarded for a Cosmos study (now published in the Journal of the American Academy of Dermatology).",
+      "Created multiple predictive population health tools, including an automated lung cancer risk detection tool to notify providers at the point-of-care when their patients are ideal candidates for lung cancer screenings, and a dashboard monitoring admitted geriatric patients based on their predicted fall risk.",
+      "Coordinated with the Cancer Center at Dartmouth to build a custom tool inside of Epic to track the care pathway of patients undergoing oncologic treatment, allowing physicians to better monitor timelines and improve survivability rates by accelerating their care.",
+    ]
+  ],
+
+  // Links 
+  links: [
+    { url: "https://scholar.google.com/citations?user=2Jebb6kAAAAJ", text: "Google Scholar" },
+    { url: "https://www.linkedin.com/in/dominic-strohmeyer-9771532a/", text: "LinkedIn" },
+  ],
+
+  // About Me
+  aboutParagraphs: [
+    "Hi, I'm Dominic.",
+    "I'm a data analyst/scientist/architect depending on the day, who enjoys tackling hard problems because I believe learning is part of a job's compensation package. I've worked in a variety of industries, but prefer when my work is able to make a direct impact in the lives of others.",
+    "Currently, I work as in a research-oriented role where I get the opportunity to derive insights from <span class=\"about-highlight\">one of the largest medical databases ever made<span class=\"about-tooltip\">Epic Cosmos is a dataset spanning over 300 million patients records across more than 2000 hospitals, combining billions of clinical data points.</span></span>.",
+    "In my free time I try never to turn-down a unique opportunity. Whether it's helping edit a book, participating in focus groups for major new shows and movies, or going on a last-minute trip because of an email about a pricing discrepancy. Otherwise, I'm likely reading, or in the kitchen baking the 10th variation of a recipe I'm working on perfecting.",
+  ],
+
+  titleGateSteps:  6,   // scroll steps title → timeline
+  resumeGateSteps: 6,   // scroll steps timeline → resume (and resume → timeline)
+};
+</script>
+
+
+<!-- Main (slides for About) -->
+<div id="main-wrap" class="main-wrap">
+
+<div id="title-card" class="layer visible">
+  <div class="logo-name" id="logoName"></div>
+  <div class="title-links-row" id="titleLinks"></div>
+  <div class="skill-flipper">
+    <div class="skill-track" id="skillTrack"></div>
+  </div>
+  <div class="scroll-hint">
+    <span>scroll to explore</span>
+    <div class="chevron-wrap">
+      <div class="chevron"></div><div class="chevron"></div>
+    </div>
+  </div>
+</div>
+
+<!-- Timeline -->
+<div id="timeline-view" class="layer below">
+  <div id="timeline-bar">
+    <div class="tl-dates-row">
+      <span class="tl-date-start" id="tlStart"></span>
+      <span class="tl-job-center" id="tlJobLabel"></span>
+      <span class="tl-date-end"   id="tlEnd"></span>
+    </div>
+    <div class="tl-track-wrap">
+      <div class="tl-fill" id="tlFill" style="width:0%"></div>
+      <div class="tl-milestones" id="tlMilestones"></div>
+    </div>
+    <div class="tl-labels-row" id="tlLabels"></div>
+  </div>
+  <div id="content-panel">
+    <div id="past-strip">
+      <div class="past-header"  id="pastHeader"></div>
+      <div class="past-bullets" id="pastBullets"></div>
+    </div>
+    <div id="job-header">
+      <div id="job-title-el"></div>
+      <div id="job-company-el"></div>
+      <div id="job-dates-el"></div>
+      <div id="job-cert-el" class="job-cert-el"></div>
+      <div id="job-tags-el" class="job-tags-el"></div>
+    </div>
+    <div id="detail-cards"></div>
+  </div>
+</div>
+
+<!-- Resume -->
+<div id="resume-view" class="layer below">
+  <div id="resume-gate-hint">↑ scroll up to return · ↓ scroll to read</div>
+  <div id="resume-scroll">
+    <div class="resume-name" id="resumeName"></div>
+       <div class="resume-skills-block">
+      <div class="resume-skills-row" id="resumeSkills"></div>
+      <div class="links-row" id="resumeLinks"></div>
+    </div>
+    <div id="resume-jobs"></div>
+  </div>
+</div>
+</div>
+
+
+<!-- About me (positioned on the right) -->
+<div id="about-view">
+  <div id="about-gate-hint">swipe left or press ← back to return</div>
+  <div id="about-scroll">
+    <div class="about-name" id="aboutName"></div>
+    <div class="about-skills-block">
+      <div class="about-skills-row" id="aboutSkills"></div>
+      <div class="about-links-row" id="aboutLinks"></div>
+    </div>
+    <div class="about-paras" id="aboutParas"></div>
+  </div>
+</div>
+
+<!-- Nav -->
+<div id="scroll-controls">
+  <button id="btnBack">← back</button>
+  <button id="btnReverse" title="Reverse timeline direction" class="active">↺ newest first</button>
+  <span id="progress-label">–</span>
+  <button id="btnNext">resume →</button>
+  <button id="btnAbout">about me →</button>
+</div>
+
+<script>
+
+
+
+const D    = PORTFOLIO;
+const JOBS = D.jobTitles.length;
+
+// Parse dates from format to absolute
+function parseDate(str) {
+  if (!str || str.trim().toLowerCase() === 'present') return null; // null = present
+  const mo = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  const [m, y] = str.trim().split(' ');
+  return parseInt(y) * 12 + mo.indexOf(m);
+}
+function fmtAbs(abs) {
+  const mo = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  return mo[abs % 12] + ' ' + Math.floor(abs / 12);
+}
+
+// Display length calculations
+function fmtRolling(jobIdx, localStep) {
+  const job       = COMPUTED[jobIdx];
+  const frac      = localStep / job.steps;           // 0..1
+  const absMonth  = job.startAbs + Math.round(frac * job.durationMonths);
+  return fmtAbs(Math.min(absMonth, job.endAbs ?? job.startAbs + job.durationMonths));
+}
+
+const NOW_ABS = (() => {
+  const d = new Date();
+  return d.getFullYear() * 12 + d.getMonth();
+})();
+
+// Per-job data
+const COMPUTED = D.jobTitles.map((_, i) => {
+  const startAbs = parseDate(D.jobStarts[i]);
+  const rawEnd   = parseDate(D.jobEnds[i]);
+  const endAbs   = rawEnd ?? NOW_ABS;
+  const durationMonths = endAbs - startAbs;
+  const steps    = Math.max(D.jobSteps[i], D.jobDetails[i].length + D.bufferSteps + 1);
+  return { startAbs, endAbs: rawEnd ? endAbs : null, durationMonths, steps };
+});
+
+// Global timeline span
+const SPAN_START = COMPUTED[0].startAbs;
+const SPAN_END   = COMPUTED[JOBS-1].endAbs ?? NOW_ABS;
+const SPAN_TOTAL = SPAN_END - SPAN_START;   // total calendar months across all jobs
+
+// Map jobs to scroll map
+const SCROLL_MAP = []; // index = global timeline step → { ji, localStep }
+COMPUTED.forEach((job, ji) => {
+  for (let ls = 0; ls < job.steps; ls++) {
+    SCROLL_MAP.push({ ji, localStep: ls });
+  }
+});
+const TIMELINE_STEPS = SCROLL_MAP.length;
+
+// Boundaries
+const TIMELINE_START    = D.titleGateSteps;
+const TIMELINE_GATE_END = TIMELINE_START + TIMELINE_STEPS + D.resumeGateSteps; // timeline ends here
+const RESUME_START      = TIMELINE_GATE_END;
+const TOTAL_STEPS       = RESUME_START + 1; // one step to enter resume; back-gate handled in goBack
+
+// DOM refs
+const titleCard    = document.getElementById('title-card');
+const timelineView = document.getElementById('timeline-view');
+const resumeView   = document.getElementById('resume-view');
+const aboutView    = document.getElementById('about-view');
+const mainWrap     = document.getElementById('main-wrap');
+const logoNameEl   = document.getElementById('logoName');
+const skillTrackEl = document.getElementById('skillTrack');
+const tlStartEl    = document.getElementById('tlStart');
+const tlEndEl      = document.getElementById('tlEnd');
+const tlJobLabel   = document.getElementById('tlJobLabel');
+const tlFill       = document.getElementById('tlFill');
+const tlMilestones = document.getElementById('tlMilestones');
+const tlLabels     = document.getElementById('tlLabels');
+const pastStrip    = document.getElementById('past-strip');
+const pastHeader   = document.getElementById('pastHeader');
+const pastBullets  = document.getElementById('pastBullets');
+const jobTitleEl   = document.getElementById('job-title-el');
+const jobCompanyEl = document.getElementById('job-company-el');
+const jobDatesEl   = document.getElementById('job-dates-el');
+const jobCertEl    = document.getElementById('job-cert-el');
+const jobTagsEl    = document.getElementById('job-tags-el');
+const detailCards  = document.getElementById('detail-cards');
+const resumeScroll = document.getElementById('resume-scroll');
+const btnBack      = document.getElementById('btnBack');
+const btnNext      = document.getElementById('btnNext');
+const btnAbout     = document.getElementById('btnAbout');
+const progressLbl  = document.getElementById('progress-label');
+
+// ── Build title ──
+logoNameEl.innerHTML = `${D.name[0]} <em>${D.name[1]}</em>`;
+(D.links || []).forEach(lnk => {
+  const a = document.createElement('a');
+  a.href = lnk.url; a.textContent = lnk.text; a.target = '_blank'; a.rel = 'noopener';
+  document.getElementById('titleLinks').appendChild(a);
+});
+if (!(D.links && D.links.length)) document.getElementById('titleLinks').style.display = 'none';
+[...D.skills, D.skills[0]].forEach(s => {
+  const el = document.createElement('div');
+  el.className = 'skill-item'; el.textContent = s;
+  skillTrackEl.appendChild(el);
+});
+
+// Build timeline elements
+function buildTimelineDots() {
+  tlMilestones.innerHTML = '';
+  tlLabels.innerHTML = '';
+
+  // In reverse mode, mirror all positions: pct → (100 - pct)
+  function placePct(rawPct) {
+    return reversed ? (100 - rawPct) : rawPct;
+  }
+
+  COMPUTED.forEach((job, i) => {
+    const rawStartPct = (job.startAbs - SPAN_START) / SPAN_TOTAL * 100;
+    const pct = placePct(rawStartPct).toFixed(3);
+
+    // Start dot
+    const dot = document.createElement('div');
+    dot.className = 'tl-milestone'; dot.id = 'dot' + i;
+    dot.style.left = pct + '%';
+    tlMilestones.appendChild(dot);
+
+    // Label at job start date — % left keeps it aligned with its dot at all viewport widths
+    const lbl = document.createElement('div');
+    lbl.className = 'tl-label'; lbl.id = 'lbl' + i;
+    lbl.textContent = D.jobStarts[i];
+    lbl.dataset.pct = pct;
+    lbl.style.left      = pct + '%';
+    lbl.style.transform = 'translateX(-50%)';
+    tlLabels.appendChild(lbl);
+
+    // Gap tick: appears at job end if there's a gap before the next job
+    if (i < JOBS - 1) {
+      const thisEnd   = job.endAbs ?? NOW_ABS;
+      const nextStart = COMPUTED[i+1].startAbs;
+      if (nextStart > thisEnd + 1) {
+        const rawEndPct = (thisEnd - SPAN_START) / SPAN_TOTAL * 100;
+        const endPct = placePct(rawEndPct).toFixed(3);
+        const mark = document.createElement('div');
+        mark.className = 'tl-gap-marker';
+        mark.style.left = endPct + '%';
+        tlMilestones.appendChild(mark);
+      }
+    }
+  });
+
+  // Small-screen stagger: odd labels drop down via CSS .tl-label-odd at <900px 
+  Array.from(tlLabels.querySelectorAll('.tl-label')).forEach((lbl, i) => {
+    if (i % 2 === 1) lbl.classList.add('tl-label-odd');
+  });
+}
+
+// Build resume
+function buildResume() {
+  const jobsEl = document.getElementById('resume-jobs');
+  jobsEl.innerHTML = '';
+  const indices = reversed
+    ? Array.from({length: JOBS}, (_, i) => JOBS - 1 - i)
+    : Array.from({length: JOBS}, (_, i) => i);
+  indices.forEach((idx, animPos) => {
+    const div = document.createElement('div');
+    div.className = 'resume-job';
+    div.style.animationDelay = (animPos * 0.1) + 's';
+    const cert = D.jobCertifications?.[idx] || '';
+    const tags = D.jobTags?.[idx] || '';
+    div.innerHTML = `
+      <div class="resume-date-col">
+        <span class="resume-date-start">${D.jobStarts[idx]}</span>
+        <div class="resume-date-sep"></div>
+        <span class="resume-date-end">${D.jobEnds[idx]}</span>
+      </div>
+      <div class="resume-body-col">
+        <div class="resume-job-title">${D.jobTitles[idx]}</div>
+        <div class="resume-company">${D.jobCompanies[idx]}</div>
+        ${cert ? `<div class="resume-cert">${cert}</div>` : ''}
+        ${tags ? `<div class="resume-tags">${tags}</div>` : ''}
+        <div class="resume-bullets">${D.jobDetails[idx].map(b =>
+          `<div class="resume-bullet">${b}</div>`).join('')}</div>
+      </div>`;
+    jobsEl.appendChild(div);
+  });
+}
+
+// Static resume header
+document.getElementById('resumeName').innerHTML = `${D.name[0]} <em>${D.name[1]}</em>`;
+D.skills.forEach(s => {
+  const t = document.createElement('span');
+  t.className = 'resume-skill-tag'; t.textContent = s;
+  document.getElementById('resumeSkills').appendChild(t);
+});
+(D.links || []).forEach(lnk => {
+  const a = document.createElement('a');
+  a.href = lnk.url; a.textContent = lnk.text; a.target = '_blank'; a.rel = 'noopener';
+  document.getElementById('resumeLinks').appendChild(a);
+});
+// Hide links row if no links
+if (!(D.links && D.links.length)) document.getElementById('resumeLinks').style.display = 'none';
+
+// Build About Me
+document.getElementById('aboutName').innerHTML = `${D.name[0]} <em>${D.name[1]}</em>`;
+D.skills.forEach(s => {
+  const t = document.createElement('span');
+  t.className = 'about-skill-tag'; t.textContent = s;
+  document.getElementById('aboutSkills').appendChild(t);
+});
+(D.links || []).forEach(lnk => {
+  const a = document.createElement('a');
+  a.href = lnk.url; a.textContent = lnk.text; a.target = '_blank'; a.rel = 'noopener';
+  document.getElementById('aboutLinks').appendChild(a);
+});
+if (!(D.links && D.links.length)) document.getElementById('aboutLinks').style.display = 'none';
+(D.aboutParagraphs || []).forEach((txt, i) => {
+  const p = document.createElement('div');
+  p.className = 'about-para';
+  p.style.animationDelay = (i * 0.1) + 's';
+  p.innerHTML = txt; // use innerHTML so highlight spans render
+  document.getElementById('aboutParas').appendChild(p);
+});
+
+// Mobile tap toggle for tooltip bubbles
+document.getElementById('aboutParas').addEventListener('click', e => {
+  const hl = e.target.closest('.about-highlight');
+  if (!hl) return;
+  const wasOpen = hl.classList.contains('tip-open');
+  document.querySelectorAll('.about-highlight.tip-open').forEach(el => el.classList.remove('tip-open'));
+  if (!wasOpen) hl.classList.add('tip-open');
+});
+
+// Layer switcher
+function showLayer(active, fromAbove, fromBelow) {
+  [titleCard, timelineView, resumeView].forEach(el => el.classList.remove('visible','above','below'));
+  active.classList.add('visible');
+  fromAbove.forEach(el => el.classList.add('above'));
+  fromBelow.forEach(el => el.classList.add('below'));
+}
+
+// About Me state
+let aboutOpen = false;
+let aboutReturnLabel = 'Title'; // what to show on the return button
+
+function getReturnLabel() {
+  if (step < TIMELINE_START) return 'Title';
+  if (step < TIMELINE_GATE_END) return 'Timeline';
+  return 'Resume';
+}
+
+function openAbout() {
+  aboutReturnLabel = getReturnLabel();
+  aboutOpen = true;
+  aboutView.classList.add('visible');
+  mainWrap.classList.add('shifted');
+  // Update nav: hide about btn, show return label on btnNext area, hide scroll btn
+  btnAbout.style.display = 'none';
+  btnNext.style.display = 'none';
+  btnReverse.style.display = 'none';
+  progressLbl.textContent = 'about me';
+  btnBack.textContent = `← ${aboutReturnLabel.toLowerCase()}`;
+  btnBack.disabled = false;
+}
+
+function closeAbout() {
+  aboutOpen = false;
+  aboutView.classList.remove('visible');
+  mainWrap.classList.remove('shifted');
+  btnAbout.style.display = '';
+  btnNext.style.display = '';
+  btnReverse.style.display = '';
+  btnBack.textContent = '← back';
+  render(step); // restore nav state
+}
+
+// Skill flipper
+const FLIPPER_H = parseInt(getComputedStyle(document.documentElement).getPropertyValue('--flipper-h')) || 52;
+let skillIdx = 0;
+setInterval(() => {
+  skillIdx++;
+  skillTrackEl.style.transform = `translateY(-${skillIdx * FLIPPER_H}px)`;
+  if (skillIdx >= D.skills.length) {
+    setTimeout(() => {
+      skillTrackEl.style.transition = 'none';
+      skillTrackEl.style.transform  = 'translateY(0)';
+      skillIdx = 0;
+      setTimeout(() => { skillTrackEl.style.transition = 'transform 0.55s cubic-bezier(0.4,0,0.2,1)'; }, 50);
+    }, 580);
+  }
+}, 1700);
+
+let step = 0;
+let lastJobIdx = -1;
+let resumeInner = false;
+let resumeBackGate = 0;   // counts down after entering resume before back is allowed
+let reversed = true;
+
+// Build both scroll maps once
+const SCROLL_MAP_FWD = SCROLL_MAP;
+const SCROLL_MAP_REV = [];
+for (let ji = JOBS - 1; ji >= 0; ji--) {
+  for (let ls = 0; ls < COMPUTED[ji].steps; ls++) {
+    SCROLL_MAP_REV.push({ ji, localStep: ls });
+  }
+}
+
+function activeMap() { return reversed ? SCROLL_MAP_REV : SCROLL_MAP_FWD; }
+
+// Direction toggle
+const btnReverse = document.getElementById('btnReverse');
+btnReverse.addEventListener('click', () => {
+  const wasOnResume = step >= RESUME_START;
+  reversed = !reversed;
+  btnReverse.textContent = reversed ? '↺ newest first' : '↺ oldest first';
+  btnReverse.classList.toggle('active', reversed);
+
+  // Rebuild visual elements for new direction
+  buildTimelineDots();
+  buildResume();
+
+  if (wasOnResume) {
+    // Stay on resume — preserve scroll position, rebuild resume content
+    resumeBackGate = 0;
+    render(step);
+  } else {
+    // Return to start of timeline
+    step = TIMELINE_START;
+    lastJobIdx = -1;
+    detailCards.innerHTML = '';
+    pastStrip.classList.remove('visible');
+    render(step);
+  }
+});
+
+// Helper: how many details to show at this localStep
+function getShownDetails(ji, localStep) {
+  const job   = COMPUTED[ji];
+  const count = D.jobDetails[ji].length;
+  const revealSteps = job.steps - D.bufferSteps;
+  const stepPerCard = Math.floor(revealSteps / (count + 1));
+  return Math.min(Math.floor(localStep / Math.max(stepPerCard, 1)), count);
+}
+
+// Rolling calendar date
+function getCurrentAbsMonth(ji, localStep) {
+  const job  = COMPUTED[ji];
+  const frac = localStep / job.steps;
+  if (reversed) {
+    const endAbs = job.endAbs ?? NOW_ABS;
+    return endAbs - Math.round(frac * job.durationMonths);
+  }
+  return job.startAbs + Math.round(frac * job.durationMonths);
+}
+
+
+function render(s) {
+  if (aboutOpen) return; // don't re-render main when about is open
+  btnBack.disabled = s <= 0 && !resumeInner;
+  btnNext.disabled = false;
+
+  // PHASE 0 — title
+  if (s < TIMELINE_START) {
+    showLayer(titleCard, [], [timelineView, resumeView]);
+    resumeInner = false;
+    progressLbl.textContent = `Introduction`;
+    btnBack.disabled = s <= 0;
+    btnNext.textContent = 'timeline →';
+    return;
+  }
+
+  // PHASE 1 — timeline (including resume gate steps at the end)
+  if (s < TIMELINE_GATE_END) {
+    showLayer(timelineView, [titleCard], [resumeView]);
+    resumeInner = false;
+    resumeScroll.scrollTop = 0;
+
+    // Clamp ts to last real timeline step during gate phase
+    const ts = Math.min(s - TIMELINE_START, TIMELINE_STEPS - 1);
+    const map = activeMap();
+    const { ji, localStep } = map[ts];
+    const job = COMPUTED[ji];
+
+    // Rolling date
+    const curAbs = getCurrentAbsMonth(ji, localStep);
+
+    // Timeline fill
+    // Forward: fill grows left→right from SPAN_START to curAbs
+    // Reverse: fill grows left→right from curAbs (mirrored) to SPAN_END (mirrored to left)
+    if (!reversed) {
+      const fillPct = (curAbs - SPAN_START) / SPAN_TOTAL * 100;
+      tlFill.style.left  = '0';
+      tlFill.style.width = Math.min(fillPct, 100).toFixed(2) + '%';
+    } else {
+      // Mirror: curAbs distance from SPAN_END, expressed as pct from left
+      const fillPct = (SPAN_END - curAbs) / SPAN_TOTAL * 100;
+      tlFill.style.left  = '0';
+      tlFill.style.width = Math.min(Math.max(fillPct, 0), 100).toFixed(2) + '%';
+    }
+
+    // Labels: left = job anchor (static), right = rolling active date
+    if (!reversed) {
+      const endDisplay = job.endAbs ? D.jobEnds[ji] : 'Present';
+      const isAtJobEnd = localStep === job.steps - 1;
+      tlStartEl.textContent = D.jobStarts[ji];
+      tlStartEl.style.color = 'var(--text-2)';
+      tlEndEl.textContent   = isAtJobEnd ? endDisplay : fmtAbs(curAbs);
+      tlEndEl.style.color   = 'var(--accent)';
+    } else {
+      // In reverse: dots are mirrored so left edge = most recent job end, right = oldest start.
+      // Left label = job's end date (static anchor for this job), right label = rolling date scrolling back
+      const endDisplay = job.endAbs ? D.jobEnds[ji] : 'Present';
+      tlStartEl.textContent = endDisplay;
+      tlStartEl.style.color = 'var(--text-2)';
+      tlEndEl.textContent   = fmtAbs(curAbs);
+      tlEndEl.style.color   = 'var(--accent)';
+    }
+    tlEndEl.classList.remove('reached');
+
+    tlJobLabel.textContent = `${D.jobTitles[ji]} · ${D.jobCompanies[ji]}`;
+
+    // Dots
+    for (let i = 0; i < JOBS; i++) {
+      const dot = document.getElementById('dot'+i);
+      const lbl = document.getElementById('lbl'+i);
+      const isActive = i === ji;
+      // "passed" = scrolled past this job already (earlier in scroll order)
+      const isPassed = reversed ? i > ji : i < ji;
+      dot?.classList.toggle('active', isActive);
+      dot?.classList.toggle('passed', isPassed && !isActive);
+      lbl?.classList.toggle('active', isActive);
+    }
+
+    // Job header
+    if (ji !== lastJobIdx) {
+      jobTitleEl.textContent   = D.jobTitles[ji];
+      jobCompanyEl.textContent = D.jobCompanies[ji];
+      jobDatesEl.textContent   = `${D.jobStarts[ji]} – ${D.jobEnds[ji]}`;
+      const cert = D.jobCertifications?.[ji] || '';
+      const tags = D.jobTags?.[ji] || '';
+      jobCertEl.textContent = cert;
+      jobCertEl.style.display = cert ? '' : 'none';
+      jobTagsEl.textContent = tags;
+      jobTagsEl.style.display = tags ? '' : 'none';
+      detailCards.innerHTML    = '';
+      lastJobIdx = ji;
+
+      const small = window.innerHeight < 600;
+      const prevIdx = reversed ? ji + 1 : ji - 1;
+      if (!small && prevIdx >= 0 && prevIdx < JOBS) {
+        pastHeader.textContent = `${D.jobTitles[prevIdx]} · ${D.jobCompanies[prevIdx]} · ${D.jobStarts[prevIdx]}–${D.jobEnds[prevIdx]}`;
+        pastBullets.innerHTML  = '';
+        D.jobDetails[prevIdx].forEach(txt => {
+          const el = document.createElement('div');
+          el.className = 'past-bullet'; el.textContent = txt;
+          pastBullets.appendChild(el);
+        });
+        pastStrip.classList.add('visible');
+      } else {
+        pastStrip.classList.remove('visible');
+      }
+    }
+
+    // Detail cards
+    const shown   = getShownDetails(ji, localStep);
+    const current = detailCards.children.length;
+    if (shown > current) {
+      for (let i = current; i < shown; i++) {
+        const el = document.createElement('div');
+        el.className = 'detail-card'; el.textContent = D.jobDetails[ji][i];
+        detailCards.appendChild(el);
+      }
+    } else if (shown < current) {
+      while (detailCards.children.length > shown) detailCards.removeChild(detailCards.lastChild);
+    }
+
+    progressLbl.textContent = `${fmtAbs(curAbs)} · ${D.jobTitles[ji]}`;
+    btnBack.disabled = s <= TIMELINE_START;
+    btnNext.textContent = 'resume →';
+    return;
+  }
+
+  // PHASE 2 — resume
+  showLayer(resumeView, [titleCard, timelineView], []);
+  btnBack.disabled = false;
+  btnNext.disabled = false;
+  btnNext.textContent = 'timeline →';
+  resumeInner = true;
+  // resumeBackGate is set by goForward on entry — do NOT reset it here
+  resumeScroll.scrollTop = 0;
+  progressLbl.textContent = `resume · scroll to read`;
+}
+
+// Input
+function goForward() {
+  if (aboutOpen) return; // block forward nav while about is open
+  if (resumeInner) {
+    const el = resumeScroll;
+    if (el.scrollTop + el.clientHeight < el.scrollHeight - 4) el.scrollTop += 80;
+    // No step incrementing while inside resume content scroll
+  } else if (step < RESUME_START) {
+    step++;
+    if (step === RESUME_START) {
+      resumeBackGate = D.resumeGateSteps;
+    }
+    render(step);
+  }
+  // Already at RESUME_START and resumeInner=true: forward scrolls only move content (handled above)
+}
+
+function goBack() {
+  if (aboutOpen) { closeAbout(); return; }
+  if (resumeInner) {
+    if (resumeScroll.scrollTop > 0) {
+      // Still content above — scroll up normally
+      resumeScroll.scrollTop -= 80;
+    } else {
+      // At the top — drain the back gate before leaving
+      if (resumeBackGate > 0) {
+        resumeBackGate--;
+      } else {
+        // Gate drained: jump back to the last real timeline step (before the gate zone)
+        resumeInner = false;
+        step = TIMELINE_START + TIMELINE_STEPS - 1;
+        render(step);
+      }
+    }
+  } else if (step >= RESUME_START) {
+    // Shouldn't normally hit this, but safety fallback
+    step = TIMELINE_START + TIMELINE_STEPS - 1;
+    render(step);
+  } else if (step > 0) {
+    step--;
+    render(step);
+  }
+}
+
+btnNext.addEventListener('click', () => { if (!aboutOpen) btnJumpForward(); });
+btnBack.addEventListener('click', () => { if (aboutOpen) closeAbout(); else btnJumpBack(); });
+btnAbout.addEventListener('click', openAbout);
+
+// ── Button-only jump functions (scroll/swipe/keyboard still use goForward/goBack) ──
+
+function btnJumpForward() {
+  if (aboutOpen) return;
+  if (step < TIMELINE_START) {
+    // Title → jump to start of timeline
+    step = TIMELINE_START;
+    render(step);
+  } else if (resumeInner) {
+    // Resume → jump back to start of timeline
+    resumeInner = false;
+    step = TIMELINE_START;
+    lastJobIdx = -1;
+    detailCards.innerHTML = '';
+    pastStrip.classList.remove('visible');
+    render(step);
+  } else if (step < TIMELINE_GATE_END) {
+    // Timeline → jump to resume
+    step = RESUME_START;
+    resumeBackGate = D.resumeGateSteps;
+    render(step);
+  }
+}
+
+function btnJumpBack() {
+  if (aboutOpen) return;
+  if (resumeInner) {
+    // Resume → jump back to end of timeline
+    resumeInner = false;
+    step = TIMELINE_START + TIMELINE_STEPS - 1;
+    render(step);
+    return;
+  }
+  if (step < TIMELINE_START) return; // already on title, nothing before it
+  if (step < TIMELINE_GATE_END) {
+    // On timeline — figure out which job and where within it
+    const ts = Math.min(step - TIMELINE_START, TIMELINE_STEPS - 1);
+    const { ji } = activeMap()[ts];
+    // Find the first scroll-map index for this job
+    const map = activeMap();
+    const jobFirstTs = map.findIndex(e => e.ji === ji);
+    const atJobStart = ts === jobFirstTs;
+    if (!atJobStart) {
+      // Jump to start of current job
+      step = TIMELINE_START + jobFirstTs;
+      render(step);
+    } else {
+      // Already at start of this job — go to end of previous job, or title
+      if (ji === (reversed ? JOBS - 1 : 0)) {
+        // First job in scroll order → go to title
+        step = 0;
+        render(step);
+      } else {
+        // Find last scroll-map index of the previous job
+        const prevJi = reversed ? ji + 1 : ji - 1;
+        let prevLastTs = jobFirstTs - 1;
+        // prevLastTs is already the last step of prevJi by construction of the map
+        step = TIMELINE_START + prevLastTs;
+        render(step);
+      }
+    }
+  }
+}
+
+window.addEventListener('wheel', e => {
+  if (aboutOpen) return; // let about-scroll handle its own scrolling
+  e.preventDefault();
+  if (e.deltaY > 0) goForward(); else goBack();
+}, { passive: false });
+
+// Touch handling — vertical swipe for main nav, horizontal swipe for about
+let touchStartX = 0, touchStartY = 0;
+window.addEventListener('touchstart', e => {
+  touchStartX = e.touches[0].clientX;
+  touchStartY = e.touches[0].clientY;
+});
+window.addEventListener('touchend', e => {
+  const dx = touchStartX - e.changedTouches[0].clientX;
+  const dy = touchStartY - e.changedTouches[0].clientY;
+
+  // Horizontal swipe takes priority if it's more horizontal than vertical
+  if (Math.abs(dx) > Math.abs(dy) && Math.abs(dx) > 28) {
+    if (dx < 0 && !aboutOpen) {
+      // Swipe RIGHT (finger moves right) → open About Me
+      openAbout();
+    } else if (dx > 0 && aboutOpen) {
+      // Swipe LEFT (finger moves left) → close About Me
+      closeAbout();
+    }
+    return;
+  }
+
+  // Vertical swipe — only on main content, not in about view
+  if (!aboutOpen && Math.abs(dy) > 28) {
+    if (dy > 0) goForward(); else goBack();
+  }
+});
+
+window.addEventListener('keydown', e => {
+  if (aboutOpen) {
+    if (['ArrowLeft', 'Escape'].includes(e.key)) closeAbout();
+    return;
+  }
+  if (['ArrowDown','ArrowRight','PageDown'].includes(e.key)) goForward();
+  if (['ArrowUp','ArrowLeft','PageUp'].includes(e.key))      goBack();
+});
+
+// Initial build
+buildTimelineDots();
+buildResume();
+render(0);
+
+</script>
 </body>
+</html>
